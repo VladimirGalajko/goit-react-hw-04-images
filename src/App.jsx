@@ -1,114 +1,99 @@
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { getImageGallery } from 'myApi/api';
 import { Div, GlobalStyle } from 'GlobalStyle';
 import { Button } from 'components/Button/Button';
-import { ImageGallery } from 'components/ImageGallery';
 import { Loader } from 'components/Loader';
-import Modal from 'components/Modal';
 import { notifiToast } from 'components/Notification/notifiToast';
+import { ImageGallery } from 'components/ImageGallery';
+import Modal from 'components/Modal';
 import Searchbar from 'components/Searchbar';
-import { getImageGallery } from 'myApi/api';
-import { Component } from 'react';
-import { ToastContainer} from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
-export class App extends Component {
-  state = {
-    page: 1,
-    gallery: [],
-    search: '',
-    isLoading: false,
-    error: '',
-    totalHits: 0,
-    hitsGalery: 0,
-    showModal: false,
-    currentImageUrl: null,
-    currentImageDescription: null,
+const App = () => {
+  const [page, setPage] = useState(1);
+  const [gallery, setGallery] = useState([]);
+  const [search, setSearch] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [totalHits, setTotalHits] = useState(0);
+  const [hitsGalery, setHitsGalery] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState(null);
+  const [currentImageDescription, setCurrentImageDescription] = useState(null);
+
+  const nextPage = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+  const toggleModal = () => {
+    setShowModal(prevShowModal => !prevShowModal);
   };
 
-  componentDidUpdate(_, prevState) {
-    const { page} = this.state;
-    if (prevState.page !== page && page !== 1) {
-      this.showPictures(this.state.search, this.state.page, true);
-    }
-  }
-  nextPage = () => {
-    this.setState(({ page }) => ({ page: page + 1 }));
-  };
-  toggleModal = () => {   
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
-  };
-
-
-  openModal = e => {   
-    const currentImageUrl = e.target.dataset.large;
+  const openModal = e => {
+    const currentImageUrl = e.target.dataset.full;
     const currentImageDescription = e.target.alt;
 
-    if (e.target.tagName === 'IMG') {     
-      this.setState(({ showModal }) => ({
-        showModal: !showModal,
-        currentImageUrl: currentImageUrl,
-        currentImageDescription: currentImageDescription,
-      }));
+    if (e.target.tagName === 'IMG') {
+      setShowModal(prevShowModal => !prevShowModal);
+      setCurrentImageUrl(currentImageUrl);
+      setCurrentImageDescription(currentImageDescription);
     }
   };
 
-  showPictures = async (search, page, check) => {
-    try {
-      this.setState({ isLoading: true });
+  useEffect(() => {
+    if (page !== 1) {
+      showPictures(search, page, true);
+    }
+  }, [page, search]);
 
+  const showPictures = async (search, page, check) => {
+    try {
+      setIsLoading(true);
       const data = await getImageGallery(search, page);
+
       if (check) {
-        this.setState({ gallery: [...this.state.gallery, ...data.hits] });
+        setGallery(prevGallery => [...prevGallery, ...data.hits]);
       } else {
-        this.setState({ gallery: data.hits });
+        setGallery(data.hits);
       }
-      this.setState({
-        search,
-        error: '',
-        isLoading: false,
-        totalHits: data.totalHits,
-        hitsGalery: this.state.gallery.length + data.hits.length,
-      });
-      if(data.hits.length === 0){       
-        notifiToast('Oops no pictures found', "info")
+
+      setError('');
+      setSearch(search);
+      setIsLoading(false);
+      setTotalHits(data.totalHits);
+      setHitsGalery(prevHitsGalery => prevHitsGalery + data.hits.length);
+
+      if (data.hits.length === 0) {
+        notifiToast('Oops no pictures found', 'info');
       }
     } catch (error) {
-      this.setState({ error: error.code, isLoading: false });
-      notifiToast(error.code)
+      setError(error.code);
+      setIsLoading(false);
+      notifiToast(error.code);
     }
   };
 
-  render() {
-    
-    const {
-      isLoading,
-      error,
-      gallery,
-      totalHits,
-      hitsGalery,
-      showModal,
-      currentImageUrl,
-      currentImageDescription,
-    } = this.state;
-    return (
-      <Div>
-         
-        <Searchbar onSubmit={this.showPictures} />
-        {isLoading && <Loader />}
-        {error &&   <ToastContainer/>}
-        <ImageGallery gallery={gallery} openModal={this.openModal} />
-        <GlobalStyle />
-        {gallery.length >= 12 && hitsGalery < totalHits && (
-          <Button nextPage={this.nextPage} />
-        )}
-        {showModal && (
-          <Modal
-            onClose={this.toggleModal}
-            currentImageUrl={currentImageUrl}
-            currentImageDescription={currentImageDescription}
-          />
-        )}
-        <ToastContainer/>
-      </Div>
-    );
-  }
-}
+  return (
+    <Div>
+      <Searchbar onSubmit={showPictures} />
+      {isLoading && <Loader />}
+      {error && <ToastContainer />}
+      <ImageGallery gallery={gallery} openModal={openModal} />
+      <GlobalStyle />
+      {gallery.length >= 12 && hitsGalery < totalHits && (
+        <Button nextPage={nextPage} />
+      )}
+      {showModal && (
+        <Modal
+          onClose={toggleModal}
+          currentImageUrl={currentImageUrl}
+          currentImageDescription={currentImageDescription}
+        />
+      )}
+      <ToastContainer />
+    </Div>
+  );
+};
+
+export default App;

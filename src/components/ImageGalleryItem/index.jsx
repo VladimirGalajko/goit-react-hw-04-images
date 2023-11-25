@@ -6,7 +6,7 @@ export const ImageGalleryItem = ({ src, alt, largeImageURL, openModal }) => {
       <Img
         src={src}
         alt={alt}       
-        data-large={largeImageURL}
+        data-full={largeImageURL}
       />
     </Li>
   );

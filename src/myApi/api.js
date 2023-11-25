@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 //42 max 500
-export const getImageGallery = async ( {search}, page) => {
+export const getImageGallery = async (search, page) => {
   const BASE_URL = 'https://pixabay.com/api/';
   const API_KEY = '39891458-4c88624de20012882beea7343';
   const params = new URLSearchParams({
@@ -13,5 +13,6 @@ export const getImageGallery = async ( {search}, page) => {
     per_page: 12,
   });
   const response = await axios(`${BASE_URL}?${params}`);
+  console.log(response.data)
   return response.data;
 };

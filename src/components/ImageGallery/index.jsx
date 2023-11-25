@@ -12,6 +12,7 @@ export const ImageGallery = ({ gallery, openModal}) => {
           src={el.webformatURL}
           largeImageURL={el.largeImageURL}
           openModal={openModal}
+          loading="lazy"
           />
         );
       })}
