@@ -13,6 +13,6 @@ export const getImageGallery = async (search, page) => {
     per_page: 12,
   });
   const response = await axios(`${BASE_URL}?${params}`);
-  console.log(response.data)
+
   return response.data;
 };
