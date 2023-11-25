@@ -74,6 +74,7 @@ const App = () => {
     }
   };
 
+  
   return (
     <Div>
       <Searchbar onSubmit={showPictures} />
