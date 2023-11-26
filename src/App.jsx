@@ -42,42 +42,37 @@ const App = () => {
   };
 
   useEffect(() => {
-    if (page !== 1) {
-      showPictures(search, page, true);
-    }
-  }, [page, search]);
-
-  const showPictures = async (search, page, clickLoadMore) => {
-    try {
-      setIsLoading(true);
-      const data = await getImageGallery(search, page);
-
-      if (clickLoadMore) {
-        setGallery(prevGallery => [...prevGallery, ...data.hits]);
-      } else {
-        setGallery(data.hits);
+    if (!search) return;
+    const showPictures = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getImageGallery(search, page);
+        setGallery(prevData => [...prevData, ...data.hits]);
+        setTotalHits(data.totalHits);
+        setHitsGalery(prevHitsGalery => prevHitsGalery + data.hits.length);
+        if (data.hits.length === 0) {
+          notifiToast('Oops no pictures found', 'info');
+        }
+      } catch (error) {
+        setError(error.code);      
+        notifiToast(error.code);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      setError('');
-      setSearch(search);
-      setIsLoading(false);
-      setTotalHits(data.totalHits);
-      setHitsGalery(prevHitsGalery => prevHitsGalery + data.hits.length);
+    showPictures();
+  }, [search, page]);
 
-      if (data.hits.length === 0) {
-        notifiToast('Oops no pictures found', 'info');
-      }
-    } catch (error) {
-      setError(error.code);
-      setIsLoading(false);
-      notifiToast(error.code);
-    }
+  const onSubmit = search => {
+    setGallery([]);
+    setSearch(search.trim());
+    setPage(1);
   };
 
-  
   return (
     <Div>
-      <Searchbar onSubmit={showPictures} />
+      <Searchbar onSubmit={onSubmit} />
       {isLoading && <Loader />}
       {error && <ToastContainer />}
       <ImageGallery gallery={gallery} openModal={openModal} />
