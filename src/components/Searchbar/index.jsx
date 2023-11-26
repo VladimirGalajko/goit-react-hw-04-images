@@ -16,7 +16,7 @@ const Searchbar = ({ onSubmit }) => {
       return;
     }
 
-    onSubmit(search);
+    onSubmit(search, 1);
     setSearch('');
   };
   return (

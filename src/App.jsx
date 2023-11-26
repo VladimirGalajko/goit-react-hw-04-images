@@ -47,12 +47,12 @@ const App = () => {
     }
   }, [page, search]);
 
-  const showPictures = async (search, page, check) => {
+  const showPictures = async (search, page, clickLoadMore) => {
     try {
       setIsLoading(true);
       const data = await getImageGallery(search, page);
 
-      if (check) {
+      if (clickLoadMore) {
         setGallery(prevGallery => [...prevGallery, ...data.hits]);
       } else {
         setGallery(data.hits);
